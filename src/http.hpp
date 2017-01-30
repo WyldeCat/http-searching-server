@@ -1,6 +1,9 @@
+
 #include "tcp.hpp"
+#include "epoll.hpp"
 
 #include <thread>
+#include <vector>
 
 class http_response {
 };
@@ -23,8 +26,10 @@ private:
 
 private:
 
-	std::thread *server_th;
-	tcp_socket *server_sockfd;
+	std::thread* server_th;
+	tcp_socket* server_sock;
+	event_handler* main_handler;
+	
 	http_response (*handler)(http_request*);
 
 };

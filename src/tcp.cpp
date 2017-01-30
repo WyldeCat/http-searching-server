@@ -24,11 +24,16 @@ tcp_socket::tcp_socket(int fd, sockaddr_in *addr):file_descriptor(fd)
 	port = addr->sin_port;
 }
 
-tcp_socket tcp_socket::accept()
+tcp_socket* tcp_socket::accept()
 {
 	sockaddr_in client_addr;
 	socklen_t client_len;
 	int fd = ::accept(file_descriptor, (struct sockaddr*)&client_addr, &client_len);
 
-	return tcp_socket(fd, &client_addr);
+	return new tcp_socket(fd, &client_addr);
+}
+
+int tcp_socket::get_file_descriptor()
+{
+	return file_descriptor;
 }
