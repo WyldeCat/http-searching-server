@@ -12,7 +12,7 @@ wrapping BSD tcp socket as tcp socket
 class tcp_socket {
 
 public:
-	tcp_socket(char* _ip,unsigned short _port);
+	tcp_socket(const char* _ip,unsigned short _port);
 	tcp_socket(int fd, sockaddr_in *addr);
 	~tcp_socket();
 
@@ -23,7 +23,7 @@ public:
 
 private:
 	int file_descriptor;
-	char* ip;
+	const char* ip;
 	unsigned short port;
 
 };

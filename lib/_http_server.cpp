@@ -1,4 +1,4 @@
-#include "http_server.h"
+#include "_http_server.h"
 #include "http_server.hpp"
 
 #include <thread>
@@ -7,7 +7,7 @@
 #include <pthread.h>
 
 
-_http_server::_http_server(http_response (*t)(http_request*), char *ip, unsigned short port)
+_http_server::_http_server(http_response (*t)(http_request*), const char *ip, unsigned short port)
 {
 	server_pointer = new http_server(t, ip, port);
 }

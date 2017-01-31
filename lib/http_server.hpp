@@ -17,7 +17,7 @@ class http_server {
 
 public:
 
-	http_server(http_response (*handler)(http_request*), char *ip, unsigned short port);
+	http_server(http_response (*handler)(http_request*),const char *ip, unsigned short port);
 	~http_server();
 	int start();
 	int stop();

@@ -5,21 +5,19 @@
 #include <arpa/inet.h>
 
 #include <stdio.h>
+#include <unistd.h>
 
-tcp_socket::tcp_socket(char* _ip,unsigned short _port)
+tcp_socket::tcp_socket(const char* _ip,unsigned short _port):ip(_ip),port(_port)
 {	
-	/*
 	file_descriptor = socket(PF_INET, SOCK_STREAM, 0);
 
 	sockaddr_in server_addr;
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(port);
-
 	inet_pton(AF_INET, ip, &server_addr.sin_addr.s_addr);
 
 	bind(file_descriptor,(struct sockaddr*)&server_addr, sizeof server_addr);
 	listen(file_descriptor, 5);
-	*/
 }
 
 tcp_socket::tcp_socket(int fd, sockaddr_in *addr):file_descriptor(fd)
@@ -31,10 +29,8 @@ tcp_socket::tcp_socket(int fd, sockaddr_in *addr):file_descriptor(fd)
 
 tcp_socket::~tcp_socket()
 {
-	fprintf(stderr,"tcp destructor\n");
+	close(file_descriptor);
 }
-
-/* -------------------------------------- */
 
 tcp_socket* tcp_socket::accept()
 {

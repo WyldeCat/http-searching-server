@@ -11,7 +11,7 @@ private:
 	http_server* server_pointer;
 
 public:
-	_http_server(http_response (*t)(http_request*), char *ip, unsigned short port);
+	_http_server(http_response (*t)(http_request*),const char *ip, unsigned short port);
 	~_http_server();
 
 	int start();
