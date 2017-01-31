@@ -6,8 +6,9 @@ wrapping epoll as event handler
 
 #include "tcp_socket.hpp"
 
-#include <epoll.h>
+#include <sys/epoll.h>
 
+class event_handler;
 
 class event {
 
@@ -15,11 +16,12 @@ public:
 	event(int _type, tcp_socket *_socket);
 
 private:
+	event();
 	int type; // maybe need enum 
 	tcp_socket *socket;
 	epoll_event *epoll_ev;
 	friend event_handler;
-}
+};
 
 
 class event_handler {
@@ -34,10 +36,9 @@ public:
 	event* get_ith_event(int i);
 
 private:
-	event_handler();
 
 	int epoll_fd;
 	int size;
 	event* events;
 
-}
+};

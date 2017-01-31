@@ -1,4 +1,4 @@
-#include "http.hpp"
+#include "http_server.hpp"
 
 #include <thread>
 #include <cstdio>
@@ -7,16 +7,12 @@
 
 http_server::http_server(http_response (*t)(http_request*), const char *ip, unsigned short port):handler(t)
 {
-	server_sockfd = new tcp_socket(ip,port);
-}
-
-http_server::~http_server()
-{
+	server_sock = new tcp_socket(ip,port);
 }
 
 int http_server::start()
 {
-	server_sock = new std::thread(&http_server::routine, this);
+	server_th = new std::thread(&http_server::routine, this);
 	return 1;
 }
 

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 
-#include "http.hpp"
+#include "http_server.h"
 
 http_response tmp(http_request *a)
 {
@@ -13,5 +13,5 @@ int main( )
 {
 	http_server server(tmp, "127.0.0.1", 4000);
 
-	server.start();
+	return 0;
 }

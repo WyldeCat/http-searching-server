@@ -1,8 +1,10 @@
-#include "tcp.hpp"
+#include "tcp_socket.hpp"
 
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
+
+#include <stdio.h>
 
 tcp_socket::tcp_socket(const char* _ip,unsigned short _port):ip(_ip),port(_port)
 {	
