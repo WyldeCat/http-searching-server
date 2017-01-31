@@ -13,13 +13,17 @@ class event_handler;
 class event {
 
 public:
+	static const int READ = EPOLLIN;
+	static const int WRITE = EPOLLOUT;
 	event(int _type, tcp_socket *_socket);
+
+	tcp_socket* get_socket();
 
 private:
 	event();
 	int type; // maybe need enum 
-	tcp_socket *socket;
-	epoll_event *epoll_ev;
+	tcp_socket* socket;
+	epoll_event* epoll_ev;
 	friend event_handler;
 };
 

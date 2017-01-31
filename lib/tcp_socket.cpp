@@ -9,8 +9,10 @@
 
 tcp_socket::tcp_socket(const char* _ip,unsigned short _port):ip(_ip),port(_port)
 {	
-	file_descriptor = socket(PF_INET, SOCK_STREAM, 0);
+	int option = 1;
 
+	file_descriptor = socket(PF_INET, SOCK_STREAM, 0);
+	setsockopt(file_descriptor, SOL_SOCKET, SO_REUSEADDR, &option, sizeof option);
 	sockaddr_in server_addr;
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(port);
@@ -35,11 +37,8 @@ tcp_socket::~tcp_socket()
 tcp_socket* tcp_socket::accept()
 {
 	sockaddr_in client_addr;
-	socklen_t client_len;
-
-	int fd = ::accept(file_descriptor, (struct sockaddr*)&client_addr, &client_len);
-
-	return new tcp_socket(fd, &client_addr);
+	socklen_t client_len = sizeof(client_addr);
+	return new tcp_socket(::accept(file_descriptor, (struct sockaddr*)&client_addr, &client_len), &client_addr);
 }
 
 int tcp_socket::get_file_descriptor()
