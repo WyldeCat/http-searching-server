@@ -31,7 +31,6 @@ tcp_socket::tcp_socket(int fd, sockaddr_in *addr):file_descriptor(fd)
 
 tcp_socket::~tcp_socket()
 {
-	close(file_descriptor);
 }
 
 tcp_socket* tcp_socket::accept()

@@ -10,6 +10,7 @@ wrapping epoll as event handler
 
 class event_handler;
 
+
 class event {
 
 public:
@@ -45,4 +46,5 @@ private:
 	int size;
 	event* events;
 
+  // TODO : make event.. and events better
 };

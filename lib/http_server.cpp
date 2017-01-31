@@ -43,18 +43,34 @@ void http_server::routine()
 	{
 		int n = main_handler->wait(-1);
 		event* tmp;
-
 		for(int i=0;i<n;i++)
 		{
 			tmp = main_handler->get_ith_event(i);
 			if(server_sockfd == tmp->get_socket()->get_file_descriptor())
 			{
 				client_sock = server_sock->accept();
-				main_handler->add(event::READ, client_sock);
+				fprintf(stderr,"added..! : %d\n",main_handler->add(event::READ, client_sock));
 				delete(client_sock);
+				// TODO : Who is the most proper function deleteing client_sock
 			}
 			else 
 			{	
+				
+				// XXX temp
+				int fd = tmp->get_socket()->get_file_descriptor(), state;
+				char buf[64]={0,};
+
+				while(1)
+				{
+					state = read(fd,buf,sizeof buf);
+					if(state == 0)
+					{
+						main_handler->del(main_handler->get_ith_event(i));
+						continue;
+					}
+					buf[state]=0;
+					fprintf(stderr,"client said.. %s\n",buf);
+				}
 			}
 		}
 	}

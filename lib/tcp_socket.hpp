@@ -4,6 +4,8 @@ wrapping BSD tcp socket as tcp socket
 
 */
 
+// TODO : How about http socket?
+
 #ifndef _TCP_SOCKET_H_
 #define _TCP_SOCKET_H_
 
