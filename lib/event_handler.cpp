@@ -48,16 +48,20 @@ int event_handler::del(int type, tcp_socket *socket)
 int event_handler::wait(int timeout)
 {
 	int state;
+	sockaddr_in client_addr;
+	socklen_t client_len = sizeof(client_addr);
+
 	epoll_event* _events = (epoll_event*)malloc(size * sizeof epoll_event);
 	state = epoll_wait(epoll_fd, _events, size, timeout);
 
 	for(int i=0;i<state;i++)
 	{
-		events[i].type = _events[i].events;
+		events[i].type = _events[i]->events;
 
 		delete(events[i].socket);
-		events[i].socket = NULL; /* TODO */
-		// Did I delete this well?
+		
+		getpeername(_events[i]->data.fd, (struct sockaddr*)&client_addr, &client_len);
+		events[i].socket = tcp_socket(_events[i]->data.fd, &client_addr); 
 	}
 
 	free(_events);

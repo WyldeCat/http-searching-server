@@ -28,6 +28,7 @@ tcp_socket* tcp_socket::accept()
 {
 	sockaddr_in client_addr;
 	socklen_t client_len;
+
 	int fd = ::accept(file_descriptor, (struct sockaddr*)&client_addr, &client_len);
 
 	return new tcp_socket(fd, &client_addr);
