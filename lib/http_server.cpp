@@ -5,10 +5,18 @@
 
 #include <pthread.h>
 
-http_server::http_server(http_response (*t)(http_request*), const char *ip, unsigned short port):handler(t)
+/* -------------------------------------- */
+
+http_server::http_server(http_response (*t)(http_request*), char *ip, unsigned short port):handler(t)
 {
 	server_sock = new tcp_socket(ip,port);
 }
+
+http_server::~http_server()
+{
+	delete(server_sock);
+}
+
 
 int http_server::start()
 {

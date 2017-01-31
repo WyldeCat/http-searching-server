@@ -1,17 +1,14 @@
-#include <iostream>
+#include <cstdio>
 #include <string>
 
 #include "http_server.h"
 
-http_response tmp(http_request *a)
-{
-	http_response t;
-	return t;
-}
-
 int main( )
 {
-	http_server server(tmp, "127.0.0.1", 4000);
-
+	{
+		_http_server server(NULL, "127.0.0.1", 4000);
+		//fprintf(stderr,"%p\n",&server);
+	}
+	fprintf(stderr,"hihi\n");
 	return 0;
 }

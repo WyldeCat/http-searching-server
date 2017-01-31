@@ -63,6 +63,7 @@ int event_handler::wait(int timeout)
 		delete(events[i].socket);
 		
 		getpeername(_events[i].data.fd, (struct sockaddr*)&client_addr, &client_len);
+
 		events[i].socket = new tcp_socket(_events[i].data.fd, &client_addr); 
 	}
 

@@ -2,11 +2,11 @@ CXX = g++
 
 LIB_PATH = ./lib
 SRC_PATH = ./src
-INCLUDE_PATH = ./include
+INCLUDE_PATH = ./include 
 
-CPPFLAGS = -std=c++11 -I $(INCLUDE_PATH) -lpthread
+CPPFLAGS = -std=c++11 -lpthread -I $(INCLUDE_PATH)
 
-LIB_SRCS = $(LIB_PATH)/tcp_socket.cpp  $(LIB_PATH)/event_handler.cpp $(LIB_PATH)/http_server.cpp
+LIB_SRCS = $(LIB_PATH)/tcp_socket.cpp  $(LIB_PATH)/event_handler.cpp $(LIB_PATH)/http_server.cpp $(LIB_PATH)/_http_server.cpp
 LIB_OBJS = $(LIB_SRCS:%.cpp=%.o)
 
 SRCS = $(SRC_PATH)/main.cpp
@@ -18,8 +18,11 @@ TARGET = main
 
 all : $(TARGET)
 
+
 $(TARGET) : $(OBJS) $(LIB_OBJS)
-	$(CXX) -o $@ $(OBJS) $(LIB_OBJS) -lpthread
+	$(CXX) -o $@ $(LIB_OBJS) $(OBJS) -lpthread
+
+	
 
 clean :
 	rm -f $(LIB_OBJS) $(OBJS) $(TARGET) 

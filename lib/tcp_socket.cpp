@@ -6,8 +6,9 @@
 
 #include <stdio.h>
 
-tcp_socket::tcp_socket(const char* _ip,unsigned short _port):ip(_ip),port(_port)
+tcp_socket::tcp_socket(char* _ip,unsigned short _port)
 {	
+	/*
 	file_descriptor = socket(PF_INET, SOCK_STREAM, 0);
 
 	sockaddr_in server_addr;
@@ -18,6 +19,7 @@ tcp_socket::tcp_socket(const char* _ip,unsigned short _port):ip(_ip),port(_port)
 
 	bind(file_descriptor,(struct sockaddr*)&server_addr, sizeof server_addr);
 	listen(file_descriptor, 5);
+	*/
 }
 
 tcp_socket::tcp_socket(int fd, sockaddr_in *addr):file_descriptor(fd)
@@ -25,6 +27,14 @@ tcp_socket::tcp_socket(int fd, sockaddr_in *addr):file_descriptor(fd)
 	ip = inet_ntoa(addr->sin_addr);
 	port = addr->sin_port;
 }
+
+
+tcp_socket::~tcp_socket()
+{
+	fprintf(stderr,"tcp destructor\n");
+}
+
+/* -------------------------------------- */
 
 tcp_socket* tcp_socket::accept()
 {
