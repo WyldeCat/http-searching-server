@@ -7,7 +7,7 @@
 #include <pthread.h>
 
 
-_http_server::_http_server(http_response (*t)(http_request*), const char *ip, unsigned short port, unsigned int size)
+_http_server::_http_server(http_response* (*t)(http_request*), const char *ip, unsigned short port, unsigned int size)
 {
 	server_pointer = new http_server(t, ip, port, size);
 }

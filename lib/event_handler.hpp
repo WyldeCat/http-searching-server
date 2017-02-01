@@ -44,7 +44,9 @@ private:
 
 	int epoll_fd;
 	int size;
-	event* events;
+	event* evnts;
+	epoll_event* _evnts;
+	event* evnt;
 
   // TODO : make event.. and events better
 };

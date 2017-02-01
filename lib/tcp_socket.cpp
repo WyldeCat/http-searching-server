@@ -19,7 +19,9 @@ tcp_socket::tcp_socket(const char* _ip,unsigned short _port):ip(_ip),port(_port)
 	inet_pton(AF_INET, ip, &server_addr.sin_addr.s_addr);
 
 	bind(file_descriptor,(struct sockaddr*)&server_addr, sizeof server_addr);
+	perror("bind: ");
 	listen(file_descriptor, 5);
+	perror("listen: ");
 }
 
 tcp_socket::tcp_socket(int fd, sockaddr_in *addr):file_descriptor(fd)
