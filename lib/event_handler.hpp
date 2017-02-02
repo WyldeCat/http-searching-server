@@ -22,7 +22,6 @@ public:
 
 private:
 	event();
-	int type; // maybe need enum 
 	tcp_socket* socket;
 	epoll_event* epoll_ev;
 	friend event_handler;
@@ -32,21 +31,20 @@ private:
 class event_handler {
 
 public:
-	event_handler(int _size);
+	event_handler(int _size, int _cnt_threads);
 	int add(event* ev);	
 	int del(event* ev);
-	int add(int type, tcp_socket *socket);
-	int del(int type, tcp_socket *socket);
-	int wait(int timeout);
-	event* get_ith_event(int i);
+	int add(int thread_idx, int type, tcp_socket *socket);
+	int del(int thread_idx, tcp_socket *socket);
+	int wait(int thread_idx, int timeout);
+	event* get_ith_event(int thread_idx, int i);
 
 private:
-
+	int cnt_threads;
 	int epoll_fd;
 	int size;
-	event* evnts;
-	epoll_event* _evnts;
+	event** evnts;
+	epoll_event** _evnts;
 	event* evnt;
 
-  // TODO : make event.. and events better
 };

@@ -5,8 +5,7 @@
 
 int main( )
 {
-	_http_server server(NULL, "192.168.1.15", 4000, 1024);
+	_http_server server(NULL, "192.168.1.210", 4000, 2048, 8);
 	server.start();
-	while(1);
 	return 0;
 }

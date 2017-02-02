@@ -5,8 +5,8 @@
 #include <thread>
 
 #include <unistd.h>
-#include <pthread.h>
 #include <signal.h>
+#include <pthread.h>
 
 /* -----------http request----------- */
 
@@ -23,13 +23,12 @@ void http_response::send(tcp_socket* socket)
 	const char *message4 = "Connection: close\r\n\r\n";
 	const char *message5 = "1234567890";
 
-	write(fd, message1, strlen(message1));
-	write(fd, message2, strlen(message2));
-	write(fd, message3, strlen(message3));
-	write(fd, message4, strlen(message4));
-	write(fd, message5, strlen(message5));
+	if(write(fd, message1, strlen(message1))==-1) perror("write");
+	if(write(fd, message2, strlen(message2))==-1) perror("write");
+	if(write(fd, message3, strlen(message3))==-1) perror("write");
+	if(write(fd, message4, strlen(message4))==-1) perror("write");
+	if(write(fd, message5, strlen(message5))==-1) perror("write");
 	
-	fprintf(stderr,"write!!\n");
 
 }
 
@@ -108,9 +107,10 @@ http_request::http_request(tcp_socket* socket)
 
 /* -----------http server----------- */
 
-http_server::http_server(http_response* (*t)(http_request*), const char *ip, unsigned short port, unsigned int _size):handler(t),size(_size)
+http_server::http_server(http_response* (*t)(http_request*), const char *ip, unsigned short port, unsigned int _size, int _cnt_threads):handler(t),size(_size),cnt_threads(_cnt_threads)
 {
 	server_sock = new tcp_socket(ip,port);
+	if(cnt_threads>1) server_th = new std::thread*[cnt_threads-1];
 }
 
 http_server::~http_server()
@@ -121,19 +121,28 @@ http_server::~http_server()
 
 int http_server::start()
 {
-	main_handler = new event_handler(size);	
-	main_handler->add(event::READ, server_sock);
-	server_th = new std::thread(&http_server::routine, this);
-	return (main_handler!=NULL && server_th!=NULL) ? 0 : -1;
+	main_handler = new event_handler(size, cnt_threads);	
+	main_handler->add(0, event::READ, server_sock);
+
+	for(int i=0;i<cnt_threads-1;i++)
+		server_th[i] = new std::thread(&http_server::routine, this, i+1);
+	this->routine(0);
+
+	return (main_handler!=NULL) ? 0 : -1;
 }
 
 int http_server::stop()
 {
-	return pthread_cancel(server_th->native_handle());
+	/*
+		TODO
+		pthread_cancel(server_th->native_handle());
+	*/
+
+	return 1;
 }
 
 
-void http_server::routine()
+void http_server::routine(int thread_idx)
 {
 	// TODO : check
 	//signal(SIGPIPE, SIG_IGN);
@@ -148,43 +157,50 @@ void http_server::routine()
 
 	while(1)
 	{
-		fprintf(stderr,"\n\n\nwating..!\n");
-		int n = main_handler->wait(-1);
-		fprintf(stderr,"wating end..!\n");
+		//fprintf(stderr,"\n\n\nwating..!\n");
+		int n = main_handler->wait(thread_idx, -1);
+		//fprintf(stderr,"wating end..!\n");
 
 		event* evnt;
 		tcp_socket* tmp;
 
 		for(int i=0;i<n;i++)
 		{
-			evnt = main_handler->get_ith_event(i);
+			evnt = main_handler->get_ith_event(thread_idx, i);
 			tmp = evnt->get_socket();
 
 			if(server_sockfd == tmp->get_file_descriptor())
 			{
-				client_sock = server_sock->accept();
-				fprintf(stderr,"added..! : %d\n",main_handler->add(event::READ, client_sock));
-				delete(client_sock);
+				while(1)
+				{
+					client_sock = server_sock->accept();
+					if(client_sock->get_file_descriptor() == -1) break;
+					main_handler->add(thread_idx, event::READ, client_sock);
+					delete(client_sock);
+				}
 			}
 			else 
 			{	
-				req = new http_request(tmp);	
-				//res = handler(req);
-
-				if(req->method == http_request::ERR)
+				while(1)
 				{
-					tmp->close_socket();
-					main_handler->del(evnt);
+					req = new http_request(tmp);	
+					//res = handler(req);
 
+					if(req->method == http_request::ERR)
+					{
+						main_handler->del(evnt);
+						tmp->close_socket();
+
+						delete req;
+						break;
+					}
+						
+					res = new http_response();
+					res->send(tmp);
+
+					delete res;
 					delete req;
-					continue;
 				}
-					
-				res = new http_response();
-				res->send(tmp);
-
-				delete res;
-				delete req;
 			}
 		}
 	}
