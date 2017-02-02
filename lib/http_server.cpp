@@ -6,6 +6,7 @@
 
 #include <unistd.h>
 #include <pthread.h>
+#include <signal.h>
 
 /* -----------http request----------- */
 
@@ -16,18 +17,18 @@ void http_response::send(tcp_socket* socket)
 	// TODO : socket write
 
 	// XXX tmp
-	char *message1 = "HTTP/1.1 200 OK\r\n";
-	char *message2 = "Content-Type: application/json; charset=utf-8\r\n";
-	char *message3 = "Content-Length: 10\r\n";
-	char *message4 = "Connection: close\r\n\r\n";
-	char *message5 = "1234567890";
+	const char *message1 = "HTTP/1.1 200 OK\r\n";
+	const char *message2 = "Content-Type: application/json; charset=utf-8\r\n";
+	const char *message3 = "Content-Length: 10\r\n";
+	const char *message4 = "Connection: close\r\n\r\n";
+	const char *message5 = "1234567890";
 
 	write(fd, message1, strlen(message1));
 	write(fd, message2, strlen(message2));
 	write(fd, message3, strlen(message3));
 	write(fd, message4, strlen(message4));
 	write(fd, message5, strlen(message5));
-
+	
 	fprintf(stderr,"write!!\n");
 
 }
@@ -36,68 +37,73 @@ void http_response::send(tcp_socket* socket)
 
 http_request::http_request(tcp_socket* socket)
 {
-	int fd = socket->get_file_descriptor();	
+	int fd = socket->get_file_descriptor(), readn;
 	char buf[1024]={0,};
 	char* i,* j;
 	char* end_line;
 
 	// TODO : socket read
-	read(fd, buf, 1024);
+	readn = read(fd, buf, 1024);
 
-	fprintf(stderr,"%s\n",buf);
-
-	end_line = i = buf;	
-	while(*end_line!='\r' && *end_line!=0) end_line++;
-
-	// METHOD
-
-	switch(*i)
+	if(readn<=0)
 	{
-		case 'G':
-			method = GET;
-			break;
-		case 'P':
-			method = (*(i+1)=='O') ? POST : PUT;
-			break;
-		case 'D':
-			method = DELETE;
-			break;
-		default:
-			method = ERR;
-			break;
+		method = ERR;
+		return;
 	}
-	while((*i)!=' ') i++;
-	i++;
 
-	// URL
-	
-	char* st=NULL;
-
-	while(1)
+	if(strlen(buf)!=0) 
 	{
-		if((*i)=='/')
+		end_line = i = buf;	
+		while(*end_line!='\r' && *end_line!=0) end_line++;
+
+		// METHOD
+
+		switch(*i)
 		{
-			if(st!=NULL)
-			{
-				url.push_back(std::string(st,i-st));
-			}
-			st = i+1;
+			case 'G':
+				method = GET;
+				break;
+			case 'P':
+				method = (*(i+1)=='O') ? POST : PUT;
+				break;
+			case 'D':
+				method = DELETE;
+				break;
+			default:
+				method = ERR;
+				break;
 		}
-		else if((*i)==' ')
+		while((*i)!=' ') i++;
+		i++;
+
+		// URL
+
+		char* st=NULL;
+
+		while(1)
 		{
-			if(*(i-1)!='/')
+			if((*i)=='/')
 			{
-				fprintf(stderr,"asdf: %c\n",*(i-1));
-				url.push_back(std::string(st,i-st));
+				if(st!=NULL)
+				{
+					url.push_back(std::string(st,i-st));
+				}
+				st = i+1;
 			}
-			break;
+			else if((*i)==' ')
+			{
+				if(*(i-1)!='/')
+				{
+					url.push_back(std::string(st,i-st));
+				}
+				break;
+			}
+			i++;
 		}
 		i++;
+
+		// TODO : Update
 	}
-	i++;
-
-	// TODO : Update
-
 }
 
 /* -----------http server----------- */
@@ -129,6 +135,9 @@ int http_server::stop()
 
 void http_server::routine()
 {
+	// TODO : check
+	//signal(SIGPIPE, SIG_IGN);
+
 	tcp_socket *client_sock;
 
 	http_request* req;
@@ -139,15 +148,19 @@ void http_server::routine()
 
 	while(1)
 	{
-		fprintf(stderr,"wating..!\n");
-
+		fprintf(stderr,"\n\n\nwating..!\n");
 		int n = main_handler->wait(-1);
 		fprintf(stderr,"wating end..!\n");
-		event* tmp;
+
+		event* evnt;
+		tcp_socket* tmp;
+
 		for(int i=0;i<n;i++)
 		{
-			tmp = main_handler->get_ith_event(i);
-			if(server_sockfd == tmp->get_socket()->get_file_descriptor())
+			evnt = main_handler->get_ith_event(i);
+			tmp = evnt->get_socket();
+
+			if(server_sockfd == tmp->get_file_descriptor())
 			{
 				client_sock = server_sock->accept();
 				fprintf(stderr,"added..! : %d\n",main_handler->add(event::READ, client_sock));
@@ -155,29 +168,23 @@ void http_server::routine()
 			}
 			else 
 			{	
-				req = new http_request(tmp->get_socket());	
+				req = new http_request(tmp);	
 				//res = handler(req);
-				res = new http_response();
-				res->send(tmp->get_socket());
-					
-				/*
-				// XXX temp
-				int fd = tmp->get_socket()->get_file_descriptor(), state;
-				char buf[1024]={0,};
 
-				while(1)
+				if(req->method == http_request::ERR)
 				{
-					state = read(fd,buf,sizeof buf);
-					if(state == 0)
-					{
-						fprintf(stderr,"client closed..\n");
-						main_handler->del(main_handler->get_ith_event(i));
-						break;
-					}
-					buf[state]=0;
-					fprintf(stderr,"client said..\n%s\n",buf);
+					tmp->close_socket();
+					main_handler->del(evnt);
+
+					delete req;
+					continue;
 				}
-				*/
+					
+				res = new http_response();
+				res->send(tmp);
+
+				delete res;
+				delete req;
 			}
 		}
 	}

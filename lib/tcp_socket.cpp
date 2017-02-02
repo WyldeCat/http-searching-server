@@ -46,3 +46,12 @@ int tcp_socket::get_file_descriptor()
 {
 	return file_descriptor;
 }
+int tcp_socket::close_socket()
+{
+	return close(file_descriptor);	
+}
+
+const char* tcp_socket::get_ip()
+{
+	return ip;
+}
