@@ -14,60 +14,60 @@ class http_server;
 class http_response {
 
 public:
-	void send(tcp_socket *socket);
+  void send(tcp_socket *socket);
 
 private:
-	char *status;
-	char *content_type;
-	char *content_length;
-	char *connection;
-	char *body;
+  char *status;
+  char *content_type;
+  char *content_length;
+  char *connection;
+  char *body;
 
 };
 
 class http_request {
 
 public:
-	typedef enum __method 
-	{
-		GET,
-		POST,
-		PUT,
-		DELETE,
-		ERR
-	} _method;
+  typedef enum __method 
+  {
+    GET,
+    POST,
+    PUT,
+    DELETE,
+    ERR
+  } _method;
 
 private:
-	http_request();
-	http_request(tcp_socket* socket);
+  http_request();
+  http_request(tcp_socket* socket);
 
 private:
-	_method method;
-	std::vector<std::string> url;
+  _method method;
+  std::vector<std::string> url;
 
-	friend http_server;
+  friend http_server;
 };
 
 
 class http_server {
 
 public:
-	http_server(http_response* (*handler)(http_request*),const char *ip, unsigned short port,unsigned int _size, int _cnt_threads);
-	~http_server();
-	int start();
-	int stop();
+  http_server(http_response* (*handler)(http_request*),const char *ip, unsigned short port,unsigned int _size, int _cnt_threads);
+  ~http_server();
+  int start();
+  int stop();
 
 private:
-	void routine(int thread_idx);
+  void routine(int thread_idx);
 
 private:
-	int cnt_threads;
-	int size;
-	std::thread** server_th;
-	tcp_socket* server_sock;
-	event_handler* main_handler;
-	
-	http_response* (*handler)(http_request*);
+  int cnt_threads;
+  int size;
+  std::thread** server_th;
+  tcp_socket* server_sock;
+  event_handler* main_handler;
+  
+  http_response* (*handler)(http_request*);
 
 };
 

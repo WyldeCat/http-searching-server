@@ -8,14 +8,14 @@ class http_server;
 class _http_server {
 
 private:
-	http_server* server_pointer;
+  http_server* server_pointer;
 
 public:
-	_http_server(http_response* (*t)(http_request*),const char *ip, unsigned short port, unsigned int size, int cnt_threads);
-	~_http_server();
+  _http_server(http_response* (*t)(http_request*),const char *ip, unsigned short port, unsigned int size, int cnt_threads);
+  ~_http_server();
 
-	int start();
-	int stop();
+  int start();
+  int stop();
 
 };
 
