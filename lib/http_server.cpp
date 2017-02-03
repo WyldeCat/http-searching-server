@@ -129,6 +129,7 @@ http_server::~http_server()
 
 int http_server::start()
 {
+  mutexes = new std::mutex[size+50];
   main_handler = new event_handler(size, cnt_threads);  
   main_handler->add(0, event::READ, server_sock);
 
@@ -153,9 +154,6 @@ int http_server::stop()
 
 void http_server::routine(int thread_idx)
 {
-  // TODO : check
-  //signal(SIGPIPE, SIG_IGN);
-
   int n;
 
   tcp_socket client_sock,* tmp;
@@ -186,8 +184,9 @@ void http_server::routine(int thread_idx)
       }
       else 
       { 
+        mutexes[tmp->get_file_descriptor()].lock();
         while(1)
-        {
+        { 
           req.set_request(tmp);
           //res = handler(req);
 
@@ -199,6 +198,7 @@ void http_server::routine(int thread_idx)
           }
           res.send(tmp);
         }
+        mutexes[tmp->get_file_descriptor()].unlock();
       }
     }
   }

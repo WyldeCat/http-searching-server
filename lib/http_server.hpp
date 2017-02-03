@@ -6,6 +6,7 @@
 #include "event_handler.hpp"
 
 #include <thread>
+#include <mutex>
 #include <vector>
 #include <string>
 
@@ -64,6 +65,7 @@ private:
 private:
   int cnt_threads;
   int size;
+  std::mutex* mutexes;
   std::thread** server_th;
   tcp_socket* server_sock;
   event_handler* main_handler;
