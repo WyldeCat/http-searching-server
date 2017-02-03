@@ -8,7 +8,7 @@
 #include <signal.h>
 #include <pthread.h>
 
-/* -----------http request----------- */
+/* -----------http response----------- */
 
 void http_response::send(tcp_socket* socket)
 {
@@ -34,8 +34,16 @@ void http_response::send(tcp_socket* socket)
 
 /* -----------http request----------- */
 
-http_request::http_request(tcp_socket* socket)
+http_request::http_request() { }
+http_request::http_request(tcp_socket* _socket):socket(_socket)
 {
+  this->set_request(socket);  
+}
+
+void http_request::set_request(tcp_socket* _socket)
+{
+  socket = _socket;
+
   int fd = socket->get_file_descriptor(), readn;
   char buf[1024]={0,};
   char* i,* j;
@@ -126,6 +134,7 @@ int http_server::start()
 
   for(int i=0;i<cnt_threads-1;i++)
     server_th[i] = new std::thread(&http_server::routine, this, i+1);
+
   this->routine(0);
 
   return (main_handler!=NULL) ? 0 : -1;
@@ -147,23 +156,20 @@ void http_server::routine(int thread_idx)
   // TODO : check
   //signal(SIGPIPE, SIG_IGN);
 
-  tcp_socket *client_sock;
+  int n;
 
-  http_request* req;
-  http_response* res;
+  tcp_socket client_sock,* tmp;
+
+  http_request req;
+  http_response res;
+  event* evnt;
 
   int server_sockfd = server_sock->get_file_descriptor();
-  fprintf(stderr,"server sockfd : %d\n",server_sockfd);
+  fprintf(stderr,"server sockfd : %d %d\n",server_sockfd, thread_idx);
 
   while(1)
   {
-    //fprintf(stderr,"\n\n\nwating..!\n");
-    int n = main_handler->wait(thread_idx, -1);
-    //fprintf(stderr,"wating end..!\n");
-
-    event* evnt;
-    tcp_socket* tmp;
-
+    n = main_handler->wait(thread_idx, -1);
     for(int i=0;i<n;i++)
     {
       evnt = main_handler->get_ith_event(thread_idx, i);
@@ -173,33 +179,25 @@ void http_server::routine(int thread_idx)
       {
         while(1)
         {
-          client_sock = server_sock->accept();
-          if(client_sock->get_file_descriptor() == -1) break;
-          main_handler->add(thread_idx, event::READ, client_sock);
-          delete(client_sock);
+          server_sock->accept(&client_sock);
+          if(client_sock.get_file_descriptor() == -1) break;
+          main_handler->add(thread_idx, event::READ, &client_sock);
         }
       }
       else 
       { 
         while(1)
         {
-          req = new http_request(tmp);  
+          req.set_request(tmp);
           //res = handler(req);
 
-          if(req->method == http_request::ERR)
+          if(req.method == http_request::ERR)
           {
             main_handler->del(evnt);
             tmp->close_socket();
-
-            delete req;
             break;
           }
-            
-          res = new http_response();
-          res->send(tmp);
-
-          delete res;
-          delete req;
+          res.send(tmp);
         }
       }
     }

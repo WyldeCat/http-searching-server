@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-event::event(int type, tcp_socket *_socket):socket(_socket)
+event::event(int type, tcp_socket* _socket):socket(_socket)
 { 
   epoll_ev = (epoll_event*)malloc(sizeof(epoll_event));
   epoll_ev->events = type;
@@ -27,6 +27,7 @@ event_handler::event_handler(int _size, int _cnt_threads):size(_size), cnt_threa
   {
       _evnts[i] = new epoll_event[size];
       evnts[i] = new event[size];
+      for(int j=0;j<size;j++) evnts[i][j].socket = new tcp_socket();
   }
 
   evnt = new event[cnt_threads];
@@ -72,9 +73,8 @@ int event_handler::wait(int thread_idx, int timeout)
 
   for(int i=0;i<state;i++)
   {
-    if(evnts[thread_idx][i].socket != NULL) delete(evnts[thread_idx][i].socket);
     getpeername(_evnts[thread_idx][i].data.fd, (struct sockaddr*)&client_addr, &client_len);
-    evnts[thread_idx][i].socket = new tcp_socket(_evnts[thread_idx][i].data.fd, &client_addr); 
+    evnts[thread_idx][i].socket->set_socket(_evnts[thread_idx][i].data.fd, &client_addr); 
   }
 
   return state;

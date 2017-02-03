@@ -37,11 +37,12 @@ public:
     ERR
   } _method;
 
-private:
   http_request();
-  http_request(tcp_socket* socket);
+  http_request(tcp_socket* _socket);
+  void set_request(tcp_socket* _socket);
 
 private:
+  tcp_socket* socket;
   _method method;
   std::vector<std::string> url;
 
