@@ -23,14 +23,14 @@ $(LIB_OBJS) : $(LIB_SRCS)
 	$(CXX) -c -o $@ $(@:%.o=%.cpp) $(CPPFLAGS) -I$(INCLUDE_PATH)
 
 $(OBJS) : $(SRCS)
-	$(CXX) -c -o $@ $(@:%.o=%.cpp) -I$(INCLUDE_PATH) -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libbson-1.0 $(CPPFLAGS)
+	$(CXX) -c -o $@ $(@:%.o=%.cpp) $(CPPFLAGS) -I$(INCLUDE_PATH) -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libbson-1.0 $(CPPFLAGS)
 
 
 $(STATIC_LIB) : $(LIB_OBJS)
 	ar crv $@ $(LIB_OBJS)
 
 $(TARGET) : $(OBJS) $(STATIC_LIB)
-	$(CXX) -o $@ $(OBJS) $(STATIC_LIB) -lpthread -L/usr/local/lib -lmongocxx -lbsoncxx
+	$(CXX) -o $@ $(OBJS) $(CPPFLAGS) $(STATIC_LIB) -lpthread -L/usr/local/lib -lmongocxx -lbsoncxx
 
 clean :
 	rm -f $(LIB_OBJS) $(OBJS) $(TARGET) 
