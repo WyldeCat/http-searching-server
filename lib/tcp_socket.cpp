@@ -43,7 +43,7 @@ tcp_socket::tcp_socket(int fd, sockaddr_in *addr):file_descriptor(fd)
 void tcp_socket::set_socket(int fd, sockaddr_in *addr)
 {
   file_descriptor = fd;
-  //strcpy((char*)ip, inet_ntoa(addr->sin_addr));
+  strcpy((char*)ip, inet_ntoa(addr->sin_addr));
   port = addr->sin_port;
 }
 

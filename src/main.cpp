@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <vector>
 #include <string>
 
 #include "_http_server.h"
@@ -6,10 +7,11 @@
 int handler(_http_request *req)
 {
   _http_response tmp(req);
+  std::vector<std::string> *url; 
+  url = req->get_url();
 
   tmp.set_status("200 OK");
-  tmp.set_body("12349956asdfasd\nsafsasdf7890");
-
+  tmp.set_body(req->get_url()->front().c_str());
   tmp.send();
   return 0;
 }

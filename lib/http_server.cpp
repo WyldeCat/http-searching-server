@@ -19,6 +19,8 @@ void http_response::send()
 {
   int fd = socket->get_file_descriptor();
   int length = strlen(body);
+  //printf("%s\n",body);
+  //printf("%d\n",length);
   int decimal_length = 0, tmp = 1;
   while(tmp<=length) { decimal_length++; tmp*=10; }
 
@@ -76,6 +78,7 @@ std::vector<std::string>* http_request::get_url()
 void http_request::set_request(tcp_socket* _socket)
 {
   socket = _socket;
+  url.clear();
 
   int fd = socket->get_file_descriptor(), readn;
   char buf[1024]={0,};
