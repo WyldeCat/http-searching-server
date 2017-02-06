@@ -6,7 +6,7 @@ INCLUDE_PATH = ./include
 
 CPPFLAGS = -g -std=c++11 -lpthread -I $(INCLUDE_PATH)
 
-LIB_SRCS = $(LIB_PATH)/tcp_socket.cpp  $(LIB_PATH)/event_handler.cpp $(LIB_PATH)/http_server.cpp $(LIB_PATH)/_http_server.cpp
+LIB_SRCS = $(LIB_PATH)/http_server/tcp_socket.cpp  $(LIB_PATH)/http_server/event_handler.cpp $(LIB_PATH)/http_server/http_server.cpp $(LIB_PATH)/http_server/_http_server.cpp
 LIB_OBJS = $(LIB_SRCS:%.cpp=%.o)
 
 SRCS = $(SRC_PATH)/main.cpp
