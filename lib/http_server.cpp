@@ -10,26 +10,40 @@
 
 /* -----------http response----------- */
 
-void http_response::send(tcp_socket* socket)
+http_response::http_response(http_request *req)
+{
+  socket = req->get_socket();
+}
+
+void http_response::send()
 {
   int fd = socket->get_file_descriptor();
+  int length = strlen(body);
+  int decimal_length = 0, tmp = 1;
+  while(tmp<=length) { decimal_length++; tmp*=10; }
 
-  // TODO : socket write
+  const char *status_prefix = "HTTP/1.1 ";
+  const char *content_type_prefix = "Content-Type: application/json; charset=utf-8\r\n";
+  const char *content_length_prefix = "Content-Length: ";//10\r\n";
+  char content_length[decimal_length+1]; for(int i=decimal_length-1;i>=0;i--){ content_length[i] = '0'+length%10; length/=10; }
+  content_length[decimal_length]=0;
+  const char *connection_prefix = "Connection: close\r\n\r\n";
 
-  // XXX tmp
-  const char *message1 = "HTTP/1.1 200 OK\r\n";
-  const char *message2 = "Content-Type: application/json; charset=utf-8\r\n";
-  const char *message3 = "Content-Length: 10\r\n";
-  const char *message4 = "Connection: close\r\n\r\n";
-  const char *message5 = "1234567890";
+  write(fd, status_prefix, strlen(status_prefix)); write(fd,status,strlen(status)); write(fd,"\r\n",strlen("\r\n"));
+  write(fd, content_type_prefix, strlen(content_type_prefix));
+  write(fd, content_length_prefix, strlen(content_length_prefix)); write(fd,content_length,strlen(content_length)); write(fd,"\r\n",strlen("\r\n"));
+  write(fd, connection_prefix, strlen(connection_prefix));
+  write(fd,body,strlen(body));
+}
 
-  if(write(fd, message1, strlen(message1))==-1) perror("write");
-  if(write(fd, message2, strlen(message2))==-1) perror("write");
-  if(write(fd, message3, strlen(message3))==-1) perror("write");
-  if(write(fd, message4, strlen(message4))==-1) perror("write");
-  if(write(fd, message5, strlen(message5))==-1) perror("write");
-  
+void http_response::set_status(const char* _status)
+{
+  status = _status;
+}
 
+void http_response::set_body(const char *_body)
+{
+  body = _body;
 }
 
 /* -----------http request----------- */
@@ -38,6 +52,25 @@ http_request::http_request() { }
 http_request::http_request(tcp_socket* _socket):socket(_socket)
 {
   this->set_request(socket);  
+}
+
+tcp_socket* http_request::get_socket()
+{
+  return socket;
+}
+const char* http_request::get_IP()
+{
+  return socket->get_IP();
+}
+
+int http_request::get_method()
+{
+  return method;
+}
+
+std::vector<std::string>* http_request::get_url()
+{
+  return &url;
 }
 
 void http_request::set_request(tcp_socket* _socket)
@@ -115,7 +148,7 @@ void http_request::set_request(tcp_socket* _socket)
 
 /* -----------http server----------- */
 
-http_server::http_server(http_response* (*t)(http_request*), const char *ip, unsigned short port, unsigned int _size, int _cnt_threads):handler(t),size(_size),cnt_threads(_cnt_threads)
+http_server::http_server(int (*t)(_http_request*), const char *ip, unsigned short port, unsigned int _size, int _cnt_threads):handler(t),size(_size),cnt_threads(_cnt_threads)
 {
   server_sock = new tcp_socket(ip,port);
   if(cnt_threads>1) server_th = new std::thread*[cnt_threads-1];
@@ -144,9 +177,9 @@ int http_server::start()
 int http_server::stop()
 {
   /*
-    TODO
-    pthread_cancel(server_th->native_handle());
-  */
+     TODO
+     pthread_cancel(server_th->native_handle());
+   */
 
   return 1;
 }
@@ -159,7 +192,9 @@ void http_server::routine(int thread_idx)
   tcp_socket client_sock,* tmp;
 
   http_request req;
-  http_response res;
+  _http_request _req;
+  _req.set_pointer(&req);
+
   event* evnt;
 
   int server_sockfd = server_sock->get_file_descriptor();
@@ -188,15 +223,13 @@ void http_server::routine(int thread_idx)
         while(1)
         { 
           req.set_request(tmp);
-          //res = handler(req);
-
           if(req.method == http_request::ERR)
           {
             main_handler->del(evnt);
             tmp->close_socket();
             break;
           }
-          res.send(tmp);
+          handler(&_req);
         }
         mutexes[tmp->get_file_descriptor()].unlock();
       }

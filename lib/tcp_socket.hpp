@@ -22,6 +22,7 @@ public:
   int tcp_readn();
   int tcp_write();
   int get_file_descriptor();
+  const char* get_IP();
   void set_socket(int fd, sockaddr_in *addr);
   int close_socket();
   

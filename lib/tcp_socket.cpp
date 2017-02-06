@@ -42,13 +42,14 @@ tcp_socket::tcp_socket(int fd, sockaddr_in *addr):file_descriptor(fd)
 
 void tcp_socket::set_socket(int fd, sockaddr_in *addr)
 {
-  if(addr == NULL)
-  {
-    fprintf(stderr,"BAAA");
-  }
   file_descriptor = fd;
   //strcpy((char*)ip, inet_ntoa(addr->sin_addr));
   port = addr->sin_port;
+}
+
+const char* tcp_socket::get_IP()
+{
+  return ip;
 }
 
 tcp_socket::~tcp_socket()
@@ -73,8 +74,7 @@ void tcp_socket::accept(tcp_socket *socket)
 }
 
 int tcp_socket::get_file_descriptor()
-{
-  return file_descriptor;
+{ return file_descriptor;
 }
 
 int tcp_socket::close_socket()
