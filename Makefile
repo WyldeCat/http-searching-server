@@ -6,52 +6,64 @@ INCLUDE_PATH = ./include
 
 CPPFLAGS = -g -std=c++11
 
-LIB_SRCS = $(LIB_PATH)/http_server/tcp_socket.cpp  $(LIB_PATH)/http_server/event_handler.cpp $(LIB_PATH)/http_server/http_server.cpp $(LIB_PATH)/http_server/_http_server.cpp
-LIB_OBJS = $(LIB_SRCS:%.cpp=%.o)
-STATIC_LIB = $(LIB_PATH)/libhttp_server.a
+HTTP_MAKE_FILE = $(LIB_PATH)/http-server/Makefile
+HTTP_LIB = $(LIB_PATH)/http-server/libhttp_server.a
+HTTP_INCLUDE = $(LIB_PATH)/http-server/include
 
-SRCS = $(SRC_PATH)/search.cpp
-OBJS = $(SRCS:%.cpp=%.o)
+TRIE_MAKE_FILE = $(LIB_PATH)/trie/Makefile
+TRIE_LIB = $(LIB_PATH)/trie/libtrie.a
+TRIE_INCLUDE = $(LIB_PATH)/trie/include
+
+SSRCS = $(SRC_PATH)/search.cpp
+SOBJS = $(SSRCS:%.cpp=%.o)
+SEARCH = ./search
 
 MSRCS = $(SRC_PATH)/mongo.cpp
 MOBJS = $(MSRCS:%.cpp=%.o)
+MONGO = ./mongo
 
-HTTP = search
-MONGO = mongo
-
-
-all : $(MONGO) $(HTTP)
+all : $(MONGO) $(SEARCH)
 mongo : $(MONGO)
-http : $(HTTP)
+search : $(SEARCH)
 
-# Need to be moved
-$(LIB_OBJS) : $(LIB_SRCS)
-	$(CXX) -c -o $@ $(@:%.o=%.cpp) $(CPPFLAGS) -I$(INCLUDE_PATH)
+
+###############################################
 
 $(MOBJS): $(MSRCS)
-	$(CXX) -c -o $@ $(MSRCS) $(CPPFLAGS) -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libbson-1.0 
+	$(CXX) -c -o $@ $(@:%.o=%.cpp) $(CPPFLAGS) -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libbson-1.0 -I$(INCLUDE_PATH) -I$(TRIE_INCLUDE)
 
-$(OBJS) : $(SRCS)
-	$(CXX) -c -o $@ $(@:%.o=%.cpp) $(CPPFLAGS) -I$(INCLUDE_PATH) 
+$(SOBJS) : $(SSRCS)
+	$(CXX) -c -o $@ $(@:%.o=%.cpp) $(CPPFLAGS) -I$(INCLUDE_PATH) -I$(HTTP_INCLUDE)
 
+$(HTTP_LIB) : $(HTTP_MAKE_FILE)
+	make -C $(LIB_PATH)/http-server all
 
-$(STATIC_LIB) : $(LIB_OBJS)
-	ar crv $@ $(LIB_OBJS)
+$(TRIE_LIB) : $(TRIE_MAKE_FILE)
+	make -C $(LIB_PATH)/trie all
 
-$(HTTP) : $(OBJS) $(STATIC_LIB)
-	$(CXX) -o $@ $(OBJS) $(CPPFLAGS) $(STATIC_LIB) -lpthread
+###############################################
 
-$(MONGO) : $(MOBJS)
-	$(CXX) -o $@ $(MOBJS) $(CPPFLAGS)  -L/usr/local/lib -lmongocxx -lbsoncxx
+$(SEARCH) : $(SOBJS) $(HTTP_LIB)
+	$(CXX) -o $@ $(SOBJS) $(CPPFLAGS) $(HTTP_LIB) -lpthread 
+
+$(MONGO) : $(MOBJS) $(TRIE_LIB)
+	$(CXX) -o $@ $(MOBJS) $(CPPFLAGS) $(TRIE_LIB)  -L/usr/local/lib -lmongocxx -lbsoncxx
+
+clean_all :
+	rm -f $(HTTP_LIB) $(TRIE_LIB)
+	rm -f $(OBJS) $(MOBJS) $(MONGO) $(SEARCH)
+	rm -f $(LIB_PATH)/.* || true
+	rm -f $(SRC_PATH)/.* || true
+	rm -f $(INCLUDE_PATH)/.* || true
+	make -f $(TRIE_MAKE_FILE) clean
+	make -f $(HTTP_MAKE_FILE) clean
 
 clean :
-	rm -f $(LIB_OBJS) $(OBJS) $(MOBJS) $(HTTP) $(MONGO)
-	rm $(LIB_PATH)/.* || true
-	rm $(MSRC_PATH)/.* || true
-	rm $(SRC_PATH)/.* || true
-	rm ./.* || true
+	rm -f $(OBJS) $(MOBJS) $(MONGO) $(SEARCH)
+	rm -f $(LIB_PATH)/.* || true
+	rm -f $(SRC_PATH)/.* || true
+	rm -f $(INCLUDE_PATH)/.* || true
 
 depend:
 	gccmakedep $(SRCS)
-
 
