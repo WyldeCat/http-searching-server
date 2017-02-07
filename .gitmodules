@@ -1,0 +1,6 @@
+[submodule "lib/http-server"]
+	path = lib/http-server
+	url = https://github.com/WyldeCat/http-server
+[submodule "lib/trie"]
+	path = lib/trie
+	url = https://github.com/WyldeCat/trie
