@@ -23,14 +23,12 @@ MOBJS = $(MSRCS:%.cpp=%.o)
 MONGO = ./mongo
 
 all : $(MONGO) $(SEARCH)
-mongo : $(MONGO)
-search : $(SEARCH)
 
 
 ###############################################
 
-$(MOBJS): $(MSRCS)
-	$(CXX) -c -o $@ $(@:%.o=%.cpp) $(CPPFLAGS) -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libbson-1.0 -I$(INCLUDE_PATH) -I$(TRIE_INCLUDE)
+$(MOBJS): %.o : %.cpp $(TRIE_INCLUDE)
+	$(CXX) -c -o $@ $< $(CPPFLAGS) -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libbson-1.0 -I$(INCLUDE_PATH) -I$(TRIE_INCLUDE)
 
 $(SOBJS) : $(SSRCS)
 	$(CXX) -c -o $@ $(@:%.o=%.cpp) $(CPPFLAGS) -I$(INCLUDE_PATH) -I$(HTTP_INCLUDE)
