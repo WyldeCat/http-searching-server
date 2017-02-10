@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdio>
 #include <set>
 #include <vector>
 
@@ -10,40 +11,55 @@
 
 #include "trie.hpp"
 
+
+struct user_info {
+  std::string image;
+  std::string _id;
+};
+
+trie<user_info> trie_user;
+
 int main( )
 {
+  int cnt = 0;
+
   mongocxx::instance inst{};
-  
-  mongocxx::uri uri("mongodb://localhost:27017");
-  mongocxx::client client(uri);
-  mongocxx::database db = client["tests"];
-  mongocxx::collection coll = db["test"];
+  mongocxx::client client{mongocxx::uri{"mongodb://192.168.1.208:27017"}};
+  mongocxx::database db = client["arture"];
+  mongocxx::collection coll = db["users"];
+  //mongocxx::collection coll_node;
   
   auto cursor = coll.find(bsoncxx::builder::stream::document{} << bsoncxx::builder::stream::finalize);
   
+  std::string key;
+  std::string name;
+  user_info tmp;
+
   for(auto doc : cursor) {
     for(auto elem : doc) 
     {
-      std::string type = bsoncxx::to_string(elem.type());
-      std::cout << type << std::endl;
-      std::string key = elem.key().to_string();
-      if(key == "name") 
-      {
-        std::string name = elem.get_utf8().value.to_string();
-        std::cout << key << ":" << name << std::endl;
-      }
+      // std::string type = bsoncxx::to_string(elem.type());
+      key = elem.key().to_string();
+
+      if(key == "name") name = elem.get_utf8().value.to_string();
       else if(key == "_id")
       {
-        std::string id = elem.get_oid().value.to_string();
-        std::cout << key << ":" << id << std::endl;
+        tmp._id = elem.get_oid().value.to_string();
       }
-      else if(key == "age")
+      else if(key == "image")
       {
-        double age = elem.get_double().value;
-        std::cout << key << ":" << age << std::endl;
+        tmp.image = elem.get_utf8().value.to_string();
       }
     }
-    std::cout << std::endl;
+    trie_user.insert((char*)name.c_str(),tmp);
+    cnt++;
   }
+
+  for(trie<user_info>::bfs_iterator it = trie_user.start(); it != trie_user.end(); it++)
+  {
+    std::cout << it.get_caption() << std::endl;
+  }
+  std::cout << cnt << std::endl;
+
   return 0;
 }

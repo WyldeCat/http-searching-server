@@ -10,8 +10,6 @@ HTTP_MAKE_FILE = $(LIB_PATH)/http-server/Makefile
 HTTP_LIB = $(LIB_PATH)/http-server/libhttp_server.a
 HTTP_INCLUDE = $(LIB_PATH)/http-server/include
 
-TRIE_MAKE_FILE = $(LIB_PATH)/trie/Makefile
-TRIE_LIB = $(LIB_PATH)/trie/libtrie.a
 TRIE_INCLUDE = $(LIB_PATH)/trie/include
 
 SSRCS = $(SRC_PATH)/search.cpp
@@ -36,15 +34,12 @@ $(SOBJS) : $(SSRCS)
 $(HTTP_LIB) : $(HTTP_MAKE_FILE)
 	make -C $(LIB_PATH)/http-server all
 
-$(TRIE_LIB) : $(TRIE_MAKE_FILE)
-	make -C $(LIB_PATH)/trie all
-
 ###############################################
 
 $(SEARCH) : $(SOBJS) $(HTTP_LIB)
 	$(CXX) -o $@ $(SOBJS) $(CPPFLAGS) $(HTTP_LIB) -lpthread 
 
-$(MONGO) : $(MOBJS) $(TRIE_LIB)
+$(MONGO) : $(MOBJS) 
 	$(CXX) -o $@ $(MOBJS) $(CPPFLAGS) $(TRIE_LIB)  -L/usr/local/lib -lmongocxx -lbsoncxx
 
 clean_all :
