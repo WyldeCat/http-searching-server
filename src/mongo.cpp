@@ -8,6 +8,8 @@
 #include <mongocxx/stdx.hpp>
 #include <mongocxx/uri.hpp>
 
+#include "trie.hpp"
+
 int main( )
 {
   mongocxx::instance inst{};
