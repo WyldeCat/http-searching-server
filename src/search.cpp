@@ -1,9 +1,4 @@
-#include <iostream>
-#include <cstdio>
-#include <vector>
-#include <string>
-
-#include "_http_server.h"
+#include "search_precompiled.hpp"
 
 int handler(_http_request *req)
 {
