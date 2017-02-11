@@ -5,52 +5,71 @@ struct user_info {
   std::string _id;
 };
 
-trie<user_info> trie_user;
+// Need a configuration file
 
-void set_trie()
-{
-  mongocxx::instance inst{};
-  mongocxx::client client{mongocxx::uri{"mongodb://192.168.1.208:27017"}};
-  mongocxx::database db = client["arture"];
-  mongocxx::collection coll = db["users"];
-  //mongocxx::collection coll_node;
-  
-  auto cursor = coll.find(bsoncxx::builder::stream::document{} << bsoncxx::builder::stream::finalize);
-  
-  std::string key;
-  std::string name;
-  user_info tmp;
+int cnt_shm=1;
+trie<user_info> *trie_user[1];
+key_t shm_key[1] = {1234};
+int shm_id[1];
 
-  for(auto doc : cursor) {
-    for(auto elem : doc) 
-    {
-      // std::string type = bsoncxx::to_string(elem.type());
-      key = elem.key().to_string();
+mongocxx::instance inst{};
+mongocxx::client client{mongocxx::uri{"mongodb://192.168.1.208:27017"}};
+mongocxx::database db = client["arture"];
+mongocxx::collection coll = db["users"];
 
-      if(key == "name") name = elem.get_utf8().value.to_string();
-      else if(key == "_id")
-      {
-        tmp._id = elem.get_oid().value.to_string();
-      }
-      else if(key == "image")
-      {
-        tmp.image = elem.get_utf8().value.to_string();
-      }
-    }
-    trie_user.insert((char*)name.c_str(),tmp);
+
+void set_shm(int x)
+{ // Setting shared memory
+  shm_id[x] = shmget(shm_key[x], 4096, 0666 | IPC_CREAT);
+
+  if(shm_id[x] == -1)
+  {
+    perror("shmget");
+    exit(0);
+  }
+
+  trie_user[x] = (trie<user_info> *)shmat(shm_id[x], (void *)0, 0);
+
+  if((void *)trie_user[x] == (void *)-1)
+  {
+    perror("shmat");
+    exit(0);
   }
 }
 
+void set_trie(int x)
+{ // Setting trie
+  *(trie_user[x]) = trie<user_info>();
+  auto cursor = coll.find(bsoncxx::builder::stream::document{} << bsoncxx::builder::stream::finalize);
+  std::string key,name;
+  user_info tmp;
+
+  for(auto doc : cursor) 
+  {
+    for(auto elem : doc) 
+    {
+      key = elem.key().to_string();
+      if(key == "name") name = elem.get_utf8().value.to_string();
+      else if(key == "_id") tmp._id = elem.get_oid().value.to_string();
+      else if(key == "image") tmp.image = elem.get_utf8().value.to_string();
+    }
+    trie_user[x]->insert((char*)name.c_str(),tmp);
+  }
+}
+
+void detach_shm(int x)
+{
+  shmdt((void*)trie_user[x]);
+}
+
+// Need to having input by arguments
 int main( )
 {
-  set_trie();
-
-  for(trie<user_info>::bfs_iterator it = trie_user.start(); it != trie_user.end(); it++)
+  for(int i=0;i<cnt_shm;i++)
   {
-    std::cout << it.get_caption();
-    if(it->get_infos().size()!=0) std::cout << "*";
-    std::cout << std::endl;
+    set_shm(i);
+    set_trie(i);
+    detach_shm(i);
   }
-
   return 0;
 }

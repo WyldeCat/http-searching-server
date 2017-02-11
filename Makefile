@@ -12,11 +12,13 @@ HTTP_INCLUDE = $(LIB_PATH)/http-server/include
 
 TRIE_INCLUDE = $(LIB_PATH)/trie/include
 
+SH = $(INCLUDE_PATH)/search_precompiled.hpp
 SPCH = $(INCLUDE_PATH)/search_precompiled.hpp.gch
 SSRCS = $(SRC_PATH)/search.cpp
 SOBJS = $(SSRCS:%.cpp=%.o)
 SEARCH = search
 
+MH = $(INCLUDE_PATH)/mongo_precompiled.hpp
 MPCH = $(INCLUDE_PATH)/mongo_precompiled.hpp.gch
 MSRCS = $(SRC_PATH)/mongo.cpp
 MOBJS = $(MSRCS:%.cpp=%.o)
@@ -27,11 +29,11 @@ all : $(MONGO) $(SEARCH)
 
 ###############################################
 
-$(MPCH):
-	$(CXX) $(CPPFLAGS) $(@:%.hpp.gch=%.hpp) -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libbson-1.0 -I$(TRIE_INCLUDE)
+$(MPCH): $(MH)
+	$(CXX) $(CPPFLAGS) $(MH) -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libbson-1.0 -I$(TRIE_INCLUDE)
 
-$(SPCH):
-	$(CXX) $(CPPFLAGS) $(@:%.hpp.gch=%.hpp) -I$(HTTP_INCLUDE)
+$(SPCH): $(SH)
+	$(CXX) $(CPPFLAGS) $(SH) -I$(HTTP_INCLUDE)
 
 $(MOBJS): %.o : %.cpp $(MPCH)
 	$(CXX) -c -o $@ $< $(CPPFLAGS) -I$(INCLUDE_PATH)
