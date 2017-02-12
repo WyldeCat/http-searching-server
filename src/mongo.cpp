@@ -8,9 +8,9 @@ struct user_info {
 // Need a configuration file
 
 int cnt_shm=1;
+int shm_id[1];
 trie<user_info> *trie_user[1];
 key_t shm_key[1] = {1234};
-int shm_id[1];
 
 mongocxx::instance inst{};
 mongocxx::client client{mongocxx::uri{"mongodb://192.168.1.208:27017"}};
@@ -55,6 +55,12 @@ void set_trie(int x)
     }
     trie_user[x]->insert((char*)name.c_str(),tmp);
   }
+
+  for(trie<user_info>::dfs_iterator it = trie_user[0]->begin(); it != trie_user[0]->end(); it++)
+  {
+    printf("%s\n",it.get_caption().c_str());
+  }
+
 }
 
 void detach_shm(int x)
@@ -69,7 +75,8 @@ int main( )
   {
     set_shm(i);
     set_trie(i);
-    detach_shm(i);
+    //detach_shm(i);
   }
+  printf("%c\n",trie_user[0]->root.children.begin()->first);
   return 0;
 }

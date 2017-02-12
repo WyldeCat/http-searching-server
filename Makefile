@@ -30,16 +30,16 @@ all : $(MONGO) $(SEARCH)
 ###############################################
 
 $(MPCH): $(MH)
-	$(CXX) $(CPPFLAGS) $(MH) -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libbson-1.0 -I$(TRIE_INCLUDE)
+	$(CXX) $(CPPFLAGS) $(MH) -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libbson-1.0 -I$(TRIE_INCLUDE) 
 
 $(SPCH): $(SH)
-	$(CXX) $(CPPFLAGS) $(SH) -I$(HTTP_INCLUDE)
+	$(CXX) $(CPPFLAGS) $(SH) -I$(HTTP_INCLUDE) -I$(TRIE_INCLUDE)
 
 $(MOBJS): %.o : %.cpp $(MPCH)
-	$(CXX) -c -o $@ $< $(CPPFLAGS) -I$(INCLUDE_PATH)
+	$(CXX) -c -o $@ $(@:%.o=%.cpp) $ $(CPPFLAGS) -I$(INCLUDE_PATH)
 
 $(SOBJS) : $(SSRCS) $(SPCH)
-	$(CXX) -c -o $@ $(@:%.o=%.cpp) $(CPPFLAGS) -I$(INCLUDE_PATH) 
+	$(CXX) -c -o $@ $(@:%.o=%.cpp) $(CPPFLAGS) -I$(INCLUDE_PATH)
 
 $(HTTP_LIB) : $(HTTP_MAKE_FILE)
 	make -C $(LIB_PATH)/http-server all
