@@ -15,3 +15,4 @@
 #include <mongocxx/uri.hpp>
 
 #include "trie.hpp"
+#include "shared_stl_allocator.hpp"

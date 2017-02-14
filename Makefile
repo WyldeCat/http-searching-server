@@ -4,7 +4,7 @@ LIB_PATH = ./lib
 SRC_PATH = ./src
 INCLUDE_PATH = ./include
 
-CPPFLAGS = -g -std=c++11
+CPPFLAGS = -g -std=c++11 -w
 
 HTTP_MAKE_FILE = $(LIB_PATH)/http-server/Makefile
 HTTP_LIB = $(LIB_PATH)/http-server/libhttp_server.a
@@ -24,19 +24,21 @@ MSRCS = $(SRC_PATH)/mongo.cpp
 MOBJS = $(MSRCS:%.cpp=%.o)
 MONGO = mongo
 
+SHARED_INCLUDE = $(LIB_PATH)/shared-stl-allocator/include
+
 all : $(MONGO) $(SEARCH)
 
 
 ###############################################
 
 $(MPCH): $(MH)
-	$(CXX) $(CPPFLAGS) $(MH) -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libbson-1.0 -I$(TRIE_INCLUDE) 
+	$(CXX) $(CPPFLAGS) $(MH) -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libbson-1.0 -I$(TRIE_INCLUDE) -I$(SHARED_INCLUDE)
 
 $(SPCH): $(SH)
-	$(CXX) $(CPPFLAGS) $(SH) -I$(HTTP_INCLUDE) -I$(TRIE_INCLUDE)
+	$(CXX) $(CPPFLAGS) $(SH) -I$(HTTP_INCLUDE) -I$(TRIE_INCLUDE) 
 
-$(MOBJS): %.o : %.cpp $(MPCH)
-	$(CXX) -c -o $@ $(@:%.o=%.cpp) $ $(CPPFLAGS) -I$(INCLUDE_PATH)
+$(MOBJS): %.o : %.cpp
+	$(CXX) -c -o $@ $(@:%.o=%.cpp) $ $(CPPFLAGS) -I$(INCLUDE_PATH) -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libbson-1.0 -I$(TRIE_INCLUDE) -I$(SHARED_INCLUDE) -lrt
 
 $(SOBJS) : $(SSRCS) $(SPCH)
 	$(CXX) -c -o $@ $(@:%.o=%.cpp) $(CPPFLAGS) -I$(INCLUDE_PATH)
