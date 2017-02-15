@@ -8,10 +8,57 @@ struct user_info {
   std::string _id;
 };
 
-int cnt_shm=1;
-int shm_id[1];
+int cnt_shm=1, shm_id[1];
 trie<user_info, SHARED_POINTER1, SHARED_POINTER2> *trie_user[1];
 key_t shm_key[1] = {1234};
+
+bool check_shm(int x);
+void set_shm(int x);
+
+int handler(_http_request *req)
+{
+  _http_response tmp(req);
+  std::vector<std::string> &url = *req->get_url(); 
+
+  if(url.size() != 2 || url.front() != "search") 
+  {
+    tmp.set_status("404 Bad");
+    tmp.set_body("You are wrong.");
+    tmp.send();
+  }
+  else 
+  {
+    int cnt = 0;
+    std::string result;
+    for(trie<user_info, SHARED_POINTER1, SHARED_POINTER2>::bfs_iterator it = trie_user[0]->find((char*)url[1].c_str()); it != trie_user[0]->end(); it++)
+    {
+      if(it->get_infos().size()!=0)
+      {
+        result += it.get_caption();
+        result += "\n"; 
+      }
+    }
+    tmp.set_status("200 OK"); 
+    tmp.set_body(result.c_str());
+    tmp.send();
+  }
+
+  return 0;
+}
+
+int main( )
+{
+  if(!check_shm(0)) 
+  {
+    fprintf(stderr,"There is no shared memory.\n");
+    exit(0);
+  }
+  set_shm(0);
+
+ _http_server server(handler, "192.168.1.210", 80, 4096, 8);
+  server.start(); 
+  return 0;
+}
 
 bool check_shm(int x)
 { // Check shared memory
@@ -49,28 +96,4 @@ void set_shm(int x)
   trie_user[x]->attach();
 }
 
-int handler(_http_request *req)
-{
-  _http_response tmp(req);
-  std::vector<std::string> *url; 
-  url = req->get_url();
 
-  tmp.set_status("200 OK");
-  tmp.set_body(req->get_url()->front().c_str());
-  tmp.send();
-  return 0;
-}
-
-int main( )
-{
-  if(!check_shm(0)) 
-  {
-    fprintf(stderr,"There is no shared memory.\n");
-    exit(0);
-  }
-  set_shm(0);
-
- _http_server server(handler, "192.168.1.210", 4000, 4096, 8);
-  server.start();
-  return 0;
-}
