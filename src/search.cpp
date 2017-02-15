@@ -1,5 +1,7 @@
 #include "search_precompiled.hpp"
 
+#define SHARED_POINTER 0xcaffe1e000
+
 struct user_info {
   std::string image;
   std::string _id;
@@ -7,7 +9,7 @@ struct user_info {
 
 int cnt_shm=1;
 int shm_id[1];
-trie<user_info> *trie_user[1];
+trie<user_info, SHARED_POINTER> *trie_user[1];
 key_t shm_key[1] = {1234};
 
 bool check_shm(int x)
@@ -36,7 +38,7 @@ void set_shm(int x)
     exit(0);
   }
 
-  trie_user[x] = (trie<user_info> *)shmat(shm_id[x], (void *)0, 0);
+  trie_user[x] = (trie<user_info, SHARED_POINTER>*)shmat(shm_id[x], (void *)0, 0);
 
   if((void *)trie_user[x] == (void *)-1)
   {

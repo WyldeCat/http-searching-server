@@ -10,3 +10,4 @@
 
 #include "_http_server.h"
 #include "trie.hpp"
+#include "shared_stl_allocator.hpp"

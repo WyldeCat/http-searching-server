@@ -28,7 +28,7 @@ void set_shm(int x)
   {
     perror("shmget");
     exit(0);
-  }
+  } 
 
   trie_user[x] = (trie<user_info, SHARED_POINTER> *)shmat(shm_id[x], (void *)0, 0);
 
@@ -41,6 +41,7 @@ void set_shm(int x)
 
 void set_trie(int x)
 { // Setting trie
+  fprintf(stderr,"set_trie()\n");
   *(trie_user[x]) = trie<user_info, SHARED_POINTER>();
   auto cursor = coll.find(bsoncxx::builder::stream::document{} << bsoncxx::builder::stream::finalize);
   std::string key,name;
@@ -56,14 +57,15 @@ void set_trie(int x)
       else if(key == "image") tmp.image = elem.get_utf8().value.to_string();
     }
     trie_user[x]->insert((char*)name.c_str(),tmp);
+    break;
   }
 
-  /*
+  
   for(trie<user_info, SHARED_POINTER>::dfs_iterator it = trie_user[0]->begin(); it != trie_user[0]->end(); it++)
   {
     printf("%s\n",it.get_caption().c_str());
   }
-  */
+  
 
 }
 

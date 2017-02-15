@@ -34,11 +34,11 @@ all : $(MONGO) $(SEARCH)
 $(MPCH): $(MH)
 	$(CXX) $(CPPFLAGS) $(MH) -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libbson-1.0 -I$(TRIE_INCLUDE) -I$(SHARED_INCLUDE)
 
-$(SPCH): $(SH)
-	$(CXX) $(CPPFLAGS) $(SH) -I$(HTTP_INCLUDE) -I$(TRIE_INCLUDE) 
+$(SPCH): $(SH) 
+	$(CXX) $(CPPFLAGS) $(SH) -I$(HTTP_INCLUDE) -I$(TRIE_INCLUDE) -I$(SHARED_INCLUDE)
 
-$(MOBJS): %.o : %.cpp
-	$(CXX) -c -o $@ $(@:%.o=%.cpp) $ $(CPPFLAGS) -I$(INCLUDE_PATH) -I/usr/local/include/mongocxx/v_noabi -I/usr/local/include/libmongoc-1.0 -I/usr/local/include/bsoncxx/v_noabi -I/usr/local/include/libbson-1.0 -I$(TRIE_INCLUDE) -I$(SHARED_INCLUDE) -lrt
+$(MOBJS): %.o : %.cpp $(MPCH)
+	$(CXX) -c -o $@ $(@:%.o=%.cpp) $ $(CPPFLAGS) -I$(INCLUDE_PATH)
 
 $(SOBJS) : $(SSRCS) $(SPCH)
 	$(CXX) -c -o $@ $(@:%.o=%.cpp) $(CPPFLAGS) -I$(INCLUDE_PATH)
@@ -49,10 +49,10 @@ $(HTTP_LIB) : $(HTTP_MAKE_FILE)
 ###############################################
 
 $(SEARCH) : $(SOBJS) $(HTTP_LIB)
-	$(CXX) -o $@ $(SOBJS) $(CPPFLAGS) $(HTTP_LIB) -lpthread 
+	$(CXX) -o $@ $(SOBJS) $(CPPFLAGS) $(HTTP_LIB) -lpthread -lrt
 
 $(MONGO) : $(MOBJS) 
-	$(CXX) -o $@ $(MOBJS) $(CPPFLAGS) $(TRIE_LIB)  -L/usr/local/lib -lmongocxx -lbsoncxx
+	$(CXX) -o $@ $(MOBJS) $(CPPFLAGS) $(TRIE_LIB)  -L/usr/local/lib -lmongocxx -lbsoncxx -lrt
 
 clean_all :
 	rm -f $(HTTP_LIB)
