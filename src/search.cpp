@@ -1,6 +1,7 @@
 #include "search_precompiled.hpp"
 
-#define SHARED_POINTER 0xcaffe1e000
+#define SHARED_POINTER1 0xcaffe1e000
+#define SHARED_POINTER2 0xcafee1e000
 
 struct user_info {
   std::string image;
@@ -9,7 +10,7 @@ struct user_info {
 
 int cnt_shm=1;
 int shm_id[1];
-trie<user_info, SHARED_POINTER> *trie_user[1];
+trie<user_info, SHARED_POINTER1, SHARED_POINTER2> *trie_user[1];
 key_t shm_key[1] = {1234};
 
 bool check_shm(int x)
@@ -38,13 +39,14 @@ void set_shm(int x)
     exit(0);
   }
 
-  trie_user[x] = (trie<user_info, SHARED_POINTER>*)shmat(shm_id[x], (void *)0, 0);
+  trie_user[x] = (trie<user_info, SHARED_POINTER1, SHARED_POINTER2>*)shmat(shm_id[x], (void *)0, 0);
 
   if((void *)trie_user[x] == (void *)-1)
   {
     perror("shmat");
     exit(0);
   }
+  trie_user[x]->attach();
 }
 
 int handler(_http_request *req)
@@ -67,17 +69,8 @@ int main( )
     exit(0);
   }
   set_shm(0);
-  auto &map = trie_user[0]->root.children;
-  printf("%d\n",map.size());
-  printf("%c\n",map.begin()->first);
-    /*
-  for(trie<user_info>::bfs_iterator it = trie_user[0]->begin(); it != trie_user[0]->end(); it++)
-  {
-    printf("%s\n",it.get_caption().c_str());
-  }
-  */
 
-  _http_server server(handler, "192.168.1.210", 4000, 4096, 8);
+ _http_server server(handler, "192.168.1.210", 4000, 4096, 8);
   server.start();
   return 0;
 }
