@@ -4,6 +4,7 @@
 #define SHARED_POINTER2 0xcafee1e000
 
 struct user_info {
+  std::string name;
   std::string image;
   std::string _id;
 };
@@ -30,11 +31,17 @@ int handler(_http_request *req)
   {
     int cnt = 0;
     std::string result;
+    printf("%s\n",url[1].c_str());
+
+    char_codec::url2utf8((char*)url[1].c_str());
+    char_codec::encode((char*)url[1].c_str());
+
+    // TODO : find 
     for(trie<user_info, SHARED_POINTER1, SHARED_POINTER2>::bfs_iterator it = trie_user[0]->find((char*)url[1].c_str()); it != trie_user[0]->end(); it++)
     {
       if(it->get_infos().size()!=0)
       {
-        result += it.get_caption();
+        result += it->get_infos().front().name; 
         result += "\n"; 
       }
     }

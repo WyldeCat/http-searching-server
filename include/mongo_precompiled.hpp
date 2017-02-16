@@ -16,3 +16,4 @@
 
 #include "trie.hpp"
 #include "shared_stl_allocator.hpp"
+#include "char_codec.hpp"

@@ -4,6 +4,7 @@
 #define SHARED_POINTER2 0xcafee1e000
 
 struct user_info {
+  std::string name;
   std::string image;
   std::string _id;
 };
@@ -16,9 +17,9 @@ trie<user_info, SHARED_POINTER1, SHARED_POINTER2> *trie_user[1];
 key_t shm_key[1] = {1234};
 
 mongocxx::instance inst{};
-mongocxx::client client{mongocxx::uri{"mongodb://192.168.1.208:27017"}};
+mongocxx::client client{mongocxx::uri{"mongodb://192.168.1.209:27017"}};
 mongocxx::database db = client["arture"];
-mongocxx::collection coll = db["users"];
+mongocxx::collection coll = db["users_user"];
 
 
 void set_shm(int x)
@@ -53,10 +54,11 @@ void set_trie(int x)
     for(auto elem : doc) 
     {
       key = elem.key().to_string();
-      if(key == "name") name = elem.get_utf8().value.to_string();
+      if(key == "name") tmp.name = name = elem.get_utf8().value.to_string();
       else if(key == "_id") tmp._id = elem.get_oid().value.to_string();
       else if(key == "image") tmp.image = elem.get_utf8().value.to_string();
     }
+    char_codec::encode((char*)name.c_str());
     trie_user[x]->insert((char*)name.c_str(),tmp);
   }
 
