@@ -2,14 +2,14 @@
 
 #define SHARED_POINTER1 0xcaffe1e000
 #define SHARED_POINTER2 0xcafee1e000
+#define SHARED_POINTER3 0xcafde1e000
 
 struct user_info {
-  std::string name;
-  std::string image;
-  std::string _id;
+  std::basic_string<char, std::char_traits<char>, shared_stl_allocator<char,SHARED_POINTER3> > name;
+  std::basic_string<char, std::char_traits<char>, shared_stl_allocator<char,SHARED_POINTER3> > image;
+  std::basic_string<char, std::char_traits<char>, shared_stl_allocator<char,SHARED_POINTER3> > _id;
 };
 
-// Need a configuration file
 
 int cnt_shm=1;
 int shm_id[1];
@@ -54,11 +54,28 @@ void set_trie(int x)
     for(auto elem : doc) 
     {
       key = elem.key().to_string();
-      if(key == "name") tmp.name = name = elem.get_utf8().value.to_string();
-      else if(key == "_id") tmp._id = elem.get_oid().value.to_string();
-      else if(key == "image") tmp.image = elem.get_utf8().value.to_string();
+      if(key == "name")
+      {
+        name = elem.get_utf8().value.to_string();
+        tmp.name.clear();
+        for(auto &c : elem.get_utf8().value.to_string()) 
+          tmp.name.push_back(c);
+      }
+      else if(key == "_id") 
+      {
+        tmp._id.clear();
+        for(auto &c : elem.get_oid().value.to_string()) tmp._id.push_back(c);
+      }
+      else if(key == "image") 
+      {
+        tmp.image.clear();
+        for(auto &c : elem.get_utf8().value.to_string()) tmp.image.push_back(c);
+      }
     }
+    fprintf(stderr,"original : %s\n",name.c_str());
     char_codec::encode((char*)name.c_str());
+    for(int i=0;i<strlen(name.c_str());i++) 
+      fprintf(stderr,"%d ",(unsigned char)name.c_str()[i]);
     trie_user[x]->insert((char*)name.c_str(),tmp);
   }
 

@@ -2,11 +2,12 @@
 
 #define SHARED_POINTER1 0xcaffe1e000
 #define SHARED_POINTER2 0xcafee1e000
+#define SHARED_POINTER3 0xcafde1e000
 
 struct user_info {
-  std::string name;
-  std::string image;
-  std::string _id;
+  std::basic_string<char, std::char_traits<char>, shared_stl_allocator<char,SHARED_POINTER3> > name;
+  std::basic_string<char, std::char_traits<char>, shared_stl_allocator<char,SHARED_POINTER3> > image;
+  std::basic_string<char, std::char_traits<char>, shared_stl_allocator<char,SHARED_POINTER3> > _id;
 };
 
 int cnt_shm=1, shm_id[1];
@@ -31,20 +32,20 @@ int handler(_http_request *req)
   {
     int cnt = 0;
     std::string result;
-    printf("%s\n",url[1].c_str());
 
     char_codec::url2utf8((char*)url[1].c_str());
     char_codec::encode((char*)url[1].c_str());
 
     // TODO : find 
-    for(trie<user_info, SHARED_POINTER1, SHARED_POINTER2>::bfs_iterator it = trie_user[0]->find((char*)url[1].c_str()); it != trie_user[0]->end(); it++)
+    std::vector<user_info> rt;
+    trie_user[0]->findAll((char*)url[1].c_str(),rt);
+
+    for(auto &user : rt)
     {
-      if(it->get_infos().size()!=0)
-      {
-        result += it->get_infos().front().name; 
-        result += "\n"; 
-      }
+      for(auto &c : user.name) result.push_back(c);
+      result+='\n';
     }
+
     tmp.set_status("200 OK"); 
     tmp.set_body(result.c_str());
     tmp.send();
@@ -62,7 +63,7 @@ int main( )
   }
   set_shm(0);
 
- _http_server server(handler, "192.168.1.210", 80, 4096, 8);
+ _http_server server(handler, "192.168.1.210", 4000, 4096, 8);
   server.start(); 
   return 0;
 }

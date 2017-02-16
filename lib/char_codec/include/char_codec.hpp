@@ -57,10 +57,11 @@ public:
         else if(l == 227 && m == 133 && r == 135) str[cnt++]=12;
         else if(l == 227 && m == 133 && r == 136) str[cnt++]=13;
         else if(l == 227 && m == 133 && r == 137) str[cnt++]=14;
-        else if(l == 227 && m == 133 && r == 139) str[cnt++]=15;
-        else if(l == 227 && m == 133 && r == 140) str[cnt++]=16;
-        else if(l == 227 && m == 133 && r == 141) str[cnt++]=17;
-        else if(l == 227 && m == 133 && r == 142) str[cnt++]=18;
+        else if(l == 227 && m == 133 && r == 138) str[cnt++]=15;
+        else if(l == 227 && m == 133 && r == 139) str[cnt++]=16;
+        else if(l == 227 && m == 133 && r == 140) str[cnt++]=17;
+        else if(l == 227 && m == 133 && r == 141) str[cnt++]=18;
+        else if(l == 227 && m == 133 && r == 142) str[cnt++]=19;
         else if(l == 227 && m == 133 && 143 <= r && r <= 163)
         {
           str[cnt++] = 1;

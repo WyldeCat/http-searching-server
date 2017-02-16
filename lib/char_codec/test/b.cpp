@@ -4,8 +4,8 @@
 
 int main( )
 {
-  char test1[]="가나다";
-  char test2[]="ㄱㄴㄷ";
+  char test1[]="황인규";
+  char test2[]="ㅎㅇㄱ";
   char test3[]="각갂갃간난닫닿";
 
   printf("%s\n",test1);
