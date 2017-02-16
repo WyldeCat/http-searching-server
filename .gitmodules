@@ -4,3 +4,6 @@
 [submodule "lib/trie"]
 	path = lib/trie
 	url = https://github.com/WyldeCat/trie
+[submodule "lib/shared-stl-allocator"]
+	path = lib/shared-stl-allocator
+	url = https://github.com/WyldeCat/shared-stl-allocator.git
