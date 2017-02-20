@@ -17,7 +17,7 @@ trie<user_info, SHARED_POINTER1, SHARED_POINTER2> *trie_user[1];
 key_t shm_key[1] = {1234};
 
 mongocxx::instance inst{};
-mongocxx::client client{mongocxx::uri{"mongodb://192.168.1.209:27017"}};
+mongocxx::client client{mongocxx::uri{"mongodb://sgay:sgay123@192.168.1.209:27017/?authSource=arture"}};
 mongocxx::database db = client["arture"];
 mongocxx::collection coll = db["users_user"];
 
@@ -66,19 +66,15 @@ void set_trie(int x)
         tmp._id.clear();
         for(auto &c : elem.get_oid().value.to_string()) tmp._id.push_back(c);
       }
-      else if(key == "image") 
+      else if(key == "pic") 
       {
         tmp.image.clear();
         for(auto &c : elem.get_utf8().value.to_string()) tmp.image.push_back(c);
       }
     }
-    fprintf(stderr,"original : %s\n",name.c_str());
     char_codec::encode((char*)name.c_str());
-    for(int i=0;i<strlen(name.c_str());i++) 
-      fprintf(stderr,"%d ",(unsigned char)name.c_str()[i]);
     trie_user[x]->insert((char*)name.c_str(),tmp);
   }
-
 }
 
 void detach_shm(int x)
