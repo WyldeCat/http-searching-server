@@ -65,7 +65,7 @@ public:
         else if(l == 227 && m == 133 && 143 <= r && r <= 163)
         {
           str[cnt++] = 1;
-          str[cnt++] = r -143 + 19;
+          str[cnt++] = r - 143 + 20;
         }
         else
         {
@@ -76,8 +76,8 @@ public:
           if(idx%589!=0)
           {
             idx = idx%589-1;
-            str[cnt++] = idx/28 + 19;
-            if(idx%28!=0) str[cnt++] = idx%28 + 39;
+            str[cnt++] = idx/28 + 20;
+            if(idx%28!=0) str[cnt++] = idx%28 + 40;
           }
         }
         i+=2;

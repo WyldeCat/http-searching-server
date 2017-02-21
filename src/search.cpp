@@ -1,8 +1,10 @@
 #include "search_precompiled.hpp"
 
 #define SHARED_POINTER1 0xcaffe1e000
-#define SHARED_POINTER2 0xcafee1e000
-#define SHARED_POINTER3 0xcafde1e000
+#define SHARED_POINTER2 0xcbffe1e000
+#define SHARED_POINTER3 0xccffe1e000
+
+shared_stl_allocator<char, SHARED_POINTER3> tt;
 
 struct user_info {
   std::basic_string<char, std::char_traits<char>, shared_stl_allocator<char,SHARED_POINTER3> > name;
@@ -37,11 +39,11 @@ int handler(_http_request *req)
 
       char_codec::url2utf8((char*)url[2].c_str());
       char_codec::encode((char*)url[2].c_str());
-      /*
+      
       for(int i=0;i<strlen(url[2].c_str());i++)
-        printf("%d ",(unsigned char)(url[2].c_str()[i]));
-      printf("\n");
-      */
+        fprintf(stderr,"%d ",(unsigned char)(url[2].c_str()[i]));
+      fprintf(stderr,"\n");
+      
 
       std::vector<user_info*> rt;
       trie_user[0]->findAll((char*)url[2].c_str(),rt);
@@ -75,6 +77,9 @@ int handler(_http_request *req)
 
 int main( )
 {
+  shared_stl_allocator<char,SHARED_POINTER3>::attach();
+  shared_stl_allocator<user_info,SHARED_POINTER2>::attach();
+  fprintf(stderr,"size: %d\n",sizeof(user_info));
   if(!check_shm(0)) 
   {
     fprintf(stderr,"There is no shared memory.\n");
@@ -82,7 +87,7 @@ int main( )
   }
   set_shm(0);
 
- _http_server server(handler, "192.168.1.210", 80, 4096, 8);
+ _http_server server(handler, "192.168.1.210", 3000, 4096, 8);
   server.start(); 
   return 0;
 }
@@ -120,7 +125,6 @@ void set_shm(int x)
     perror("shmat");
     exit(0);
   }
-  trie_user[x]->attach();
 }
 
 
